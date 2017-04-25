@@ -29,41 +29,47 @@ We'll cover the topics below:
     
 3. **My Take**
 
-4. **Packrat - What it is?**
+4. **Quick Notes on Managing Libraries**
 
-5. **Packrat - Installing**
+5. **Packrat - What it is?**
 
-6. **Packrat Fundamentals**
+6. **Packrat - Installing**
 
-7. **Packrat Commands & Functions**
+7. **Packrat Fundamentals**
 
-8. **Anatomy of a Packrat Project**
+8. **Packrat Commands & Functions**
 
-9. **Packrat Tips**
+9. **Anatomy of a Packrat Project**
 
-10. **Quick start - Stand Alone Demo**
+10. **Packrat Tips**
 
-11. **RStudio Projects**
+11. **Quick start - Stand Alone Full Mode Demo**
 
-12. **Using Packrat with RStudio**
+12. **Quick start - Stand Alone Lite Mode Demo**
 
-13. **RStudio Packrat Notes**
+13. **RStudio Projects**
 
-14. **Demo - RStudio Mode**
+14. **Using Packrat with RStudio**
 
-15. **Packrat Bundle Sharing**
+15. **RStudio Packrat Notes**
 
-16. **Collaboration**
+16. **Demo - RStudio Full Mode**
 
-17. **Packrat & Version Control**
+17. **What if I Want to Use my Own Local Repository?**
 
-18. **Packrat Notes**
+18. **Packrat Bundle Sharing**
 
-19. **Other Package Tools Used for Managing Packages & Package Dependencies**
+19. **Collaboration**
 
-20. **Other Tools**
+20. **Packrat & Version Control**
 
-21. **Interesting**
+21. **Packrat Notes**
+
+22. **Other Package Tools Used for Managing Packages & Package Dependencies**
+
+23. **Other Tools**
+
+24. **Interesting**
 
 ## How would you reproduce this analysis?
 
@@ -180,17 +186,29 @@ Does your old code look more like a series of misunderstandings and cryptic note
 
 - http://lukesingham.com/using-package-management-in-r/
 
-Once you start working with R, you’ll quickly find out that R package dependencies can cause a lot of headaches and unfortunately, private libraries don’t travel well; like all R libraries, their contents are compiled for your specific machine architecture, operating system, and R version
+Once you start working with R, you’ll quickly find out that R package dependencies can cause a lot of headaches and unfortunately, private libraries don’t travel well; like all R libraries, their contents are compiled for your specific machine architecture, operating system, and R version.
 
 So what are people doing today?
 
-1. Nothing - maybe annotating, or commenting on the code. Good annotations can help users determine if issues are code issues, are package related (and can therefore be addressed with packrat), or are (rarely) issues with versions of R. R version errors are harder to fix, and are not addressed by the packrat package. They might store the results of sessionInfo() or devtools::session_info() for the analysis and Sys.info() too. The information from sessionInfo() is used to recreate the analysis environment if needed to repeat down the road.
+1. Nothing or Capturing Session & Sys Info - maybe annotating, or commenting on the code. Good annotations can help users determine if issues are code issues, are package related (and can therefore be addressed with packrat), or are (rarely) issues with versions of R. R version errors are harder to fix, and are not addressed by the packrat package. They might store the results of sessionInfo() or devtools::session_info() for the analysis and Sys.info() too. The information from sessionInfo() is used to recreate the analysis environment if needed to repeat down the road.
 
-2. R Markdown & Git - R Markdown is used to help structure the analyses and output. At a minimum, one would hope for all of the appropriate data, a description of the software used for analysis or the software itself, and some metadata describing the data and how it was processed.  Git and Github (or insert your favorite version control and code-sharing tooling here) is used to track changes and share projects with collaborators.
+2. sessionInfo, R Markdown & Git - Users capture sessionInfo() and use R Markdown to help structure the analyses and output. At a minimum, one would hope for all of the appropriate data, a description of the software used for analysis or the software itself, and some metadata describing the data and how it was processed.  Git and Github (or insert your favorite version control and code-sharing tooling here) is used to track changes and share projects with collaborators.
+
+Here is a R Markdown example with sessionInfo:
+
+- https://rpubs.com/jesuscastagnetto/caret-knn-cancer-prediction
 
 - http://bconnelly.net/2014/07/creating-reproducible-software-environments-with-packrat/
 
-3. R Markdown, Git and Packrat - archive all the software and their dependency.
+3. R Markdown, Git and Packrat - All of 2 above is used with packrat in usually two fashions:
+
+- Packrat lite - use *packrat::.snapshotImpl(snapshot.sources = False, ".")* to generate the packrat.lock file to list the precise package versions that were used to satisfy dependencies, including dependencies of dependencies. Packages are not stored.
+
+- https://github.com/rstudio/packrat/blob/master/man/snapshotImpl.Rd
+
+- Packrat Full - Using packrat by storing your package dependencies in your private package library.
+
+People at this level will usually also mirror the cran repo and use a local repo.
 
 "R package dependencies can be frustrating. Have you ever had to use trial-and-error to figure out what R packages you need to install to make someone else’s code work-and then been left with those packages globally installed forever, because now you’re not sure whether you need them? Have you ever updated a package to get code in one of your projects to work, only to find that the updated package makes code in another project stop working?"
 
@@ -204,7 +222,7 @@ So what are people doing today?
 
 - https://cereo.wsu.edu/2017/02/23/packrat-package-managing-package-versions/
 
-4. Docker, R Markdown and Git
+4. Docker, R Markdown, Git and sometimes packrat too - Usually all of 1-3 above and now Docker and other tools like chef and travis-ci.
 
 - http://www.baselr.org/presentations/2017/03/BaselR_-_Reproducible_analysis_-_Joris_Muller_-_20170307.pdf
 
@@ -232,6 +250,26 @@ Some limitations include:
 - Learning curve
 - Breaking old habits
 - *Maybe Extra IT workload
+
+## Quick Notes on Managing Libraries
+
+Many people use the standard R install and use common/system libraries or user libraries, and download from CRAN to these locations. Some limit package installs from CRAN using encrypted HTTPS connections as explained here:
+
+https://support.rstudio.com/hc/en-us/articles/206827897-Secure-Package-Downloads-for-R
+
+Common/system libraries & user information is here:
+
+- https://support.rstudio.com/hc/en-us/articles/215733837-Managing-libraries-for-RStudio-Server
+
+- https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Managing-libraries
+
+If you have mutiple versions of R, you can read more here:
+
+https://support.rstudio.com/hc/en-us/articles/200486138-Using-Different-Versions-of-R
+
+General package information is here:
+
+https://support.rstudio.com/hc/en-us/articles/200486508-Building-Testing-and-Distributing-Packages
 
 ## Packrat - What it is?
 
@@ -314,7 +352,11 @@ init will find any packages used by the scripts in your project and download the
 
 - packrat::on() : lets you go back into “packrat mode”
 
+Other helpful commands/functions:
+
 - getwd() : not packrat function but tells you which directory
+
+- .libPaths() : You can see all the library paths installed for your user by issuing this command in the console
 
 ## Anatomy of a Packrat Project
 
@@ -352,7 +394,7 @@ http://blog.jom.link/implementation_basic_reproductible_workflow.html
 
 - Installing local source packages - You may be working on a project with an R package that is not available on any external repository. Packrat can still handle this... With source packages, we expect these packages live in a local repository. A local repository is just a directory containing package sources. This can be set within a packrat project with: *packrat::set_opts(local.repos = "<path_to_repo>")*
 
-## Quick start - Stand Alone Demo
+## Quick start - Stand Alone Full Mode Demo
 
 Create a new directory that will contain all the .R scripts, CSV data, and other files that are needed.
 
@@ -376,6 +418,20 @@ Create a new directory that will contain all the .R scripts, CSV data, and other
 - https://rpubs.com/nishantsbi/221948
 - https://rstudio.github.io/packrat/walkthrough.html
 - https://cereo.wsu.edu/2017/02/23/packrat-package-managing-package-versions/
+
+## Quick start - Stand Alone Lite Mode Demo
+
+The above example is a full example of using packrat with a simple analysis. What if you only wanted to capture the library and r info but not everything else - storing your packages and their dependencies in your private package library.
+
+Then you can use Packrat lite by using *packrat::.snapshotImpl(snapshot.sources = False, ".")* to generate the packrat.lock file to list the R version used and precise package versions that were used to satisfy dependencies, including dependencies of dependencies. Packages are not stored. This will allow you to recreate the environment at a later date/time.
+
+```{r}
+# devtools::install_github("rstudio/packrat")
+# setwd("~/packrat_test_lite")
+# Create/run Analysis file
+# packrat::.snapshotImpl(snapshot.sources = FALSE, ".")
+# packrat.lock is generated & has R version and package(s) information
+```
 
 ## RStudio Projects
 
@@ -421,9 +477,27 @@ You can pick your library state or the Packrat state, but not some of each.
 
 Remember, package removes aren’t auto-snapshotted, so save your changes to Packrat once you’ve verified that your project’s state is consistent after cleanup.
 
-## Demo - RStudio Mode
+## Demo - RStudio Full Mode
 
 Let’s try packrat::install_github("rstudio/rmarkdown"). Once the command finishes you’ll see the Packages pane show the new packages.
+
+## What if I Want to Use my Own Local Repository?
+
+Many people/organizations will also mirror the cran repo as explained here:
+
+- https://cran.rstudio.com/mirror-howto.html
+
+It is an easy way to grab all the packages and files from CRAN at once and then you set your repo to point to that new location as described here:
+
+- http://docs.rstudio.com/ide/server-pro/r-sessions.html#cran-repositories
+
+Other organizations do the above via Packrat.
+
+- https://rstudio.github.io/packrat/custom-repos.html
+
+- https://rstudio.github.io/packrat/limitations.html
+
+- install a package that lives within a local repository with packrat::install_local() after following the steps above.
 
 ## Packrat Bundle Sharing
 
@@ -469,6 +543,8 @@ There are two ways a bundled project can be “unbundled” :
 - If you’re collaborating using a version control system, Packrat will help keep your private libraries in sync. RStudio watches for changes to your Packrat lockfile. When a change from a version control system updates your Packrat lockfile, RStudio will prompt you to apply that change to your private library.
 
 ## Packrat Notes
+
+- https://rstudio.github.io/packrat/limitations.html
 
 - 1. http://lukesingham.com/using-package-management-in-r/
 
