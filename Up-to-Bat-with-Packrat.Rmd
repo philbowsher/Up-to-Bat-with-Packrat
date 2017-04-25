@@ -483,6 +483,12 @@ Let’s try packrat::install_github("rstudio/rmarkdown"). Once the command finis
 
 ## What if I Want to Use my Own Local Repository?
 
+A repository is a directory containg uninstalled R source files or platform-specific binaries. A repository cotains a PACKAGES file with important information about the repository’s content.
+
+A library is a directory containing installed R packages.
+
+Though a repository and a library look very similar, they are two distinct entities.
+
 Many people/organizations will also mirror the cran repo as explained here:
 
 - https://cran.rstudio.com/mirror-howto.html
@@ -498,6 +504,10 @@ Other organizations do the above via Packrat.
 - https://rstudio.github.io/packrat/limitations.html
 
 - install a package that lives within a local repository with packrat::install_local() after following the steps above.
+
+Setting Up a local repository info here:
+
+- https://support.rstudio.com/hc/en-us/articles/115006298728-Package-Management-for-Offline-RStudio-Connect-Installations
 
 ## Packrat Bundle Sharing
 
