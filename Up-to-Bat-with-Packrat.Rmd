@@ -156,6 +156,12 @@ Currently, reproducibility is hard work and it might help to acknowledge that ex
 
 - http://ivory.idyll.org/blog/2017-pof-software-archivability.html
 
+After a review of the options (packrat, docker, git, etc.) it seems there is no one option as of yet that satisfies many of the needs of reproducibility and many offer 2 of 3 benefits/features below:
+
+1. Cost/Resource Effectiveness
+2. Supports Reproducibility
+3. Functional / User Friendly / Ease of Use
+
 ## Motivation - Reproducible Research
 
 - https://cran.r-project.org/web/views/ReproducibleResearch.html
@@ -234,7 +240,7 @@ People at this level will usually also mirror the cran repo and use a local repo
 
 Words like “reproducibility”, “portability” , "repeatability", "replicability" and “unit testing” are buzzing big time.
 
-Managing reproducibility is like managing security, a good program balances risk, business impact and cost using various controls and determines at what level to implement the strategies.
+Managing reproducibility is like managing security. A good security program balances risk, business impact and cost using various controls and determines at what level to implement the strategies.
 
 - https://rpubs.com/cosmicBboy/nyc-r-stats-pegged1
 
