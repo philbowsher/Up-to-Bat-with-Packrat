@@ -1,0 +1,569 @@
+---
+title: "Up to Bat with Packrat"
+output: 
+  html_document: 
+    highlight: textmate
+    toc: yes
+    toc_float: 
+      collapsed: no
+    theme: cosmo
+---
+
+## Introduction
+
+R is a powerful programming language for statistical computing with many packages and tools.
+
+The goal of this article is to arm you with tools and techniques for using packrat. 
+
+When you or someone else wants to run your project months or years in the future, there will be no need to figure out what versions of packages were used and the source as Packrat will retain the information.
+
+ - https://rstudio.github.io/packrat/
+ - https://cran.r-project.org/web/packages/packrat/index.html
+ - https://rpubs.com/jjallaire/packrat-useR-2014
+ 
+We'll cover the topics below:
+
+1. **How would you reproduce this analysis?**
+
+2. **Motivation - Reproducible Research**
+    
+3. **My Take**
+
+4. **Packrat - What it is?**
+
+5. **Packrat - Installing**
+
+6. **Packrat Fundamentals**
+
+7. **Packrat Commands & Functions**
+
+8. **Anatomy of a Packrat Project**
+
+9. **Packrat Tips**
+
+10. **Quick start - Stand Alone Demo**
+
+11. **RStudio Projects**
+
+12. **Using Packrat with RStudio**
+
+13. **RStudio Packrat Notes**
+
+14. **Demo - RStudio Mode**
+
+15. **Packrat Bundle Sharing**
+
+16. **Collaboration**
+
+17. **Packrat & Version Control**
+
+18. **Packrat Notes**
+
+19. **Other Package Tools Used for Managing Packages & Package Dependencies**
+
+20. **Other Tools**
+
+21. **Interesting**
+
+## How would you reproduce this analysis?
+
+- http://spark.rstudio.com/taxiDemoH2O.nb.html#
+
+What items were used?
+
+1. Data?
+
+- The NYC taxi data contain over 1 billion records describing pickups and drop offs
+- Spark DataFrames & H2O Frames
+- Hadoop - Cloudera / Hortonworks?
+- Databases?
+
+2. Packages?
+
+- library(sparklyr)
+- library(tidyverse)
+- library(leaflet)
+- library(rsparkling)
+- library(h2o)
+- library(DT)
+- library(rpart)
+
+3. Other software?
+
+- Environment Variables
+- Spark
+- RStudio/R
+- R version
+- Operating system
+
+4. Platform/hardware?
+
+- Hardware
+- Machine Architecture
+- Platform size and compute
+- Cluster
+- Cloud environment - AWS, Azure, Google
+
+What steps were followed?
+
+- sqlvis_raster.R
+- sqlvis_histogram.R
+- taxiDemoH2O.Rmd
+
+When was it done?
+
+What was the purpose?
+
+https://github.com/rstudio/sparkDemos/blob/master/prod/presentations/sparkSummitEast/taxiDemoH2O.Rmd
+
+How much time, effort, money, people would it take to repeat the analysis above?
+
+What is Reproducibility?
+
+"Reproducibility is the ability of an entire analysis of an experiment or study to be duplicated, either by the same researcher or by someone else working independently, whereas reproducing an experiment is called replicating it"
+
+- https://en.wikipedia.org/wiki/Reproducibility
+
+- http://biorxiv.org/content/early/2016/07/29/066803
+
+- http://t-redactyl.io/blog/2016/10/a-crash-course-in-reproducible-research-in-r.html
+
+- http://ivory.idyll.org/blog/2017-pof-software-archivability.html
+
+- http://blog.jom.link/ten_rules_reproductible_research.html
+
+Should everything be reproducible?
+
+Can we reproduce these reports?
+
+https://blogs.wsj.com/dailyshot/2017/04/23/wsjs-daily-shot-kickstarting-americas-productuvity/
+
+Can we even access data behind the plots?
+
+If you have an enterprise environment for reproducible research, then please give your R admin/platform manager a high five for me.
+
+- https://ropensci.org/blog/2014/06/09/reproducibility/
+
+"It is difficult to find a counter-argument to these claims, but arguing that reproducibility is laudable in general glosses over the fact that for each research group it is a significant amount of work to make their research (easily) reproducible for independent scientists.""
+
+Currently, reproducibility is hard work and it might help to acknowledge that exact repeatability has a half life of utility.
+
+- http://ivory.idyll.org/blog/2017-pof-software-archivability.html
+
+## Motivation - Reproducible Research
+
+- https://cran.r-project.org/web/views/ReproducibleResearch.html
+
+R packages change over time, and often they are not backwards compatible...and there are multiple dimensions:
+
+- Reproducible Research across time (running the same analysis again years later)
+
+- Reproducible Research across space (moving code from a desktop to a server, or between the systems of collaborators)
+
+Freezing projects can help by confining arbitrary combinations of R packages with a guarantee of being able to use them in the future.
+
+Why Bother?
+
+The rapid rate at which data science environments are changing, it can very easily become the case that scripts run in a specific environment no longer properly work after a just short period of time. That puts a clock on the reproducibility of your project, which can limit its impact and usefulness.
+
+Have you ever asked?
+
+1) Where even is that R script?
+
+2) This code totally worked the last time I used it, and it simply doesn’t now. What changed?
+
+3) Is this the code I used for that conference poster, or was it another version? Wasn’t there some code in here for sequence plots? Where did that go?
+
+Does your old code look more like a series of misunderstandings and cryptic notes than clean, reproducible analyses?
+
+"Common Problem: Let's say you coded a project in R in 2014 using the package dplyr and you called the project 2014project. Over time packages get updated, sometimes changing syntax and function names, let's say some major syntax changes occurred in 2015 to dplyr and you used the latest version of dplyr in other projects in 2015. Now you come to 2016 and you want to re-run the code in the 2014project, but you find a bunch of errors because in 2015 dplyr had those syntax changes, such that the syntax you used in 2014 no longer computes..."
+
+- http://lukesingham.com/using-package-management-in-r/
+
+Once you start working with R, you’ll quickly find out that R package dependencies can cause a lot of headaches and unfortunately, private libraries don’t travel well; like all R libraries, their contents are compiled for your specific machine architecture, operating system, and R version
+
+So what are people doing today?
+
+1. Nothing - maybe annotating, or commenting on the code. Good annotations can help users determine if issues are code issues, are package related (and can therefore be addressed with packrat), or are (rarely) issues with versions of R. R version errors are harder to fix, and are not addressed by the packrat package. They might store the results of sessionInfo() or devtools::session_info() for the analysis and Sys.info() too. The information from sessionInfo() is used to recreate the analysis environment if needed to repeat down the road.
+
+2. R Markdown & Git - R Markdown is used to help structure the analyses and output. At a minimum, one would hope for all of the appropriate data, a description of the software used for analysis or the software itself, and some metadata describing the data and how it was processed.  Git and Github (or insert your favorite version control and code-sharing tooling here) is used to track changes and share projects with collaborators.
+
+- http://bconnelly.net/2014/07/creating-reproducible-software-environments-with-packrat/
+
+3. R Markdown, Git and Packrat - archive all the software and their dependency.
+
+"R package dependencies can be frustrating. Have you ever had to use trial-and-error to figure out what R packages you need to install to make someone else’s code work-and then been left with those packages globally installed forever, because now you’re not sure whether you need them? Have you ever updated a package to get code in one of your projects to work, only to find that the updated package makes code in another project stop working?"
+
+- https://rstudio.github.io/packrat/
+
+"Because of how painless it makes sharing reproducible projects—either openly with the public, with collaborators, or just between different machines—Packrat is an essential tool for R."
+
+- http://bconnelly.net/2014/07/creating-reproducible-software-environments-with-packrat/
+
+"Depending on the level of experience, R users may not have ran into this issue before but it is a persistent problem with the R system. Due to the dynamic and open nature of the software, changes and improvements to packages can tweek the way that certain functions interact, making old code buggy or obsolete. Packrat is an attempt to control for this."
+
+- https://cereo.wsu.edu/2017/02/23/packrat-package-managing-package-versions/
+
+4. Docker, R Markdown and Git
+
+- http://www.baselr.org/presentations/2017/03/BaselR_-_Reproducible_analysis_-_Joris_Muller_-_20170307.pdf
+
+- https://ropensci.org/blog/2014/11/10/open-data-growth.html
+
+- http://blog.jom.link/ten_rules_reproductible_research.html
+
+## My Take
+
+Words like “reproducibility”, “portability” , "repeatability", "replicability" and “unit testing” are buzzing big time.
+
+Managing reproducibility is like managing security, a good program balances risk, business impact and cost using various controls and determines at what level to implement the strategies.
+
+- https://rpubs.com/cosmicBboy/nyc-r-stats-pegged1
+
+By adopting packrat, you can: 
+
+- Improve knowledge transfer among team
+- Maintain a reproducible workflow
+- Provide a dependency management system for R
+
+Some limitations include:
+
+- Necessary Time Investment and extra steps in workflow
+- Learning curve
+- Breaking old habits
+- *Maybe Extra IT workload
+
+## Packrat - What it is?
+
+Packrat is an R package that implements a dependency management system for R.
+
+Packrat creates a special kind of directory - a private package library for a given R project or directory.
+
+Within the packrat directory, any libraries you install are isolated.
+
+```{r}
+readLines(system.file("DESCRIPTION", package = "packrat"))[c(3,9,10)]
+```
+
+The last ‘snapshotted’ state can be used to save and restore the state of the private library
+
+Packrat captures all source code required to reproduce configurations and requires no changes to CRAN.
+
+## Packrat - Installing
+
+Packrat is on CRAN, so you can install it with:
+
+```{r}
+# install.packages("packrat")
+```
+
+- https://blog.rstudio.org/2014/09/05/packrat-on-cran/
+
+Or you can install using devtools:
+
+```{r}
+# install.packages("devtools")
+# devtools::install_github("rstudio/packrat")
+```
+
+Once you initialize Packrat on that directory, it will keep track of which version of R is used as well as which packages are used in your scripts, including their version information and source code. This makes your project completely self-contained.
+
+## Packrat Fundamentals
+
+Packrat folders are able to keep track of your dependencies due to the presence of a lock file, which simply keeps track of what libraries you installed and their versions.
+
+init will find any packages used by the scripts in your project and download the source code for the version used. It will also store the version of R and a copy of itself, so Packrat does not need to already be installed on other machines in order for your project to be used.
+
+- http://bconnelly.net/2014/07/creating-reproducible-software-environments-with-packrat/
+
+- Packrat uses the “::” syntax to call commands as it is a way to specify exactly which packages commands are being used.
+
+## Packrat Commands & Functions
+
+- https://rstudio.github.io/packrat/commands.html
+
+- packrat::init("~/path/to/repo") : Create a packrat project, initializes an isolated package library for the current project
+
+- packrat::bootstrap has been renamed to packrat::init()
+
+- packrat::snapshot() : packages in use and stores those packages, saves all changes within the packrat project library since the last snapshot
+
+- packrat::restore() : Restore the directory to the last snapshotted state, deletes all changes within the packrat project library since the last snapshot
+
+- packrat::install_github()
+
+- packrat::bundle() : creates a tarball of the project, the packages and its dependencies
+
+- packrat::unbundle((bundle = "path//to//the//bundle", where = ".") : unbundles (restores) a project within a subdirectory of another (conveniently empty) project
+
+- packrat::status()
+
+- packrat::clean()
+
+- packrat::packrat_mode() : capabilities for easily moving in and out of Packrat projects
+
+- packrat::disable()
+
+- ?"packrat-options"
+
+- packrat::set_opts() : Get/set project-specific settings
+
+- packrat::get_opts()
+
+- packrat::off() : lets you temporarily step out of “packrat mode”, which means, that you will now use your global user library instead of the packrat project library
+
+- packrat::on() : lets you go back into “packrat mode”
+
+- getwd() : not packrat function but tells you which directory
+
+## Anatomy of a Packrat Project
+
+https://rpubs.com/cosmicBboy/nyc-r-stats-pegged1
+
+Within packrat, each folder is essentially its own environment, with its own packages. When you use Packrat via the RStudio IDE integration, it will actually be its own project.
+
+You will need to have all the data and scripts related to your project in its own directory. How these files are named and organized is up to you.
+
+- .Rprofile , Directs R to use the private package library (when it is started from the project directory).
+
+- packrat/lib/ , Private package library for this project.
+
+- packrat/src/ , Source packages of all the dependencies that packrat has been made aware of.
+
+- packrat/packrat.lock , Lists the precise package versions that were used to satisfy dependencies, including dependencies of dependencies.
+
+- packrat/packrat.opts , Project-specific packrat options.
+
+## Packrat Tips
+
+- *packrat::init()*: This will allow packrat to find the packages used by scanning for `library()` or `require()` functions in the scripts. Furthermore, when some packages are added when writing R code, packrat will automatically add it.
+
+- request users call devtools::install_github() directly : See https://github.com/rstudio/packrat/issues/362
+
+- When a user opts in to using packrat with an RStudio project, one of the things packrat automatically does is create (or modify) a project-specific .Rprofile. Packrat uses the .Rprofile to ensure that each time the project opens, Packrat mode is turned on.
+
+- Once you are working within a packrat session there are some useful commands to know. One is sessionInfo() which shows what versions of things you have loaded. devtools::session_info() can also be used and has more info.
+
+http://blog.jom.link/implementation_basic_reproductible_workflow.html
+
+- There is also a way to install older versions of packages – this is useful if you want to create a new packrat project but you realize your current packages are too new. Information on how to do that can be found here : https://support.rstudio.com/hc/en-us/articles/219949047-Installing-older-versions-of-packages
+
+- As long as you are in packrat_mode, when you run install.packages() or remove remove.packages() it will only be modifying your project folder.
+
+- Installing local source packages - You may be working on a project with an R package that is not available on any external repository. Packrat can still handle this... With source packages, we expect these packages live in a local repository. A local repository is just a directory containing package sources. This can be set within a packrat project with: *packrat::set_opts(local.repos = "<path_to_repo>")*
+
+## Quick start - Stand Alone Demo
+
+Create a new directory that will contain all the .R scripts, CSV data, and other files that are needed.
+
+```{r}
+# devtools::install_github("rstudio/packrat")
+# setwd("~/packrat_test")
+# library(packrat)
+# packrat::init()
+# install.packages("ggplot2")
+# library(ggplot2)
+# Run file
+# packrat::snapshot()
+# packrat::bundle()
+```
+
+```{r}
+# remove.packages('ggplot2')
+# packrat::status()
+# packrat::restore()
+```
+- https://rpubs.com/nishantsbi/221948
+- https://rstudio.github.io/packrat/walkthrough.html
+- https://cereo.wsu.edu/2017/02/23/packrat-package-managing-package-versions/
+
+## RStudio Projects
+
+If you are new to projects, please read this before taking a swing at packrat via the RStudio IDE :
+
+- https://support.rstudio.com/hc/en-us/articles/200526207-Using-Projects
+
+RStudio projects make it straightforward to divide your work into multiple contexts, each with their own working directory, workspace, history, and source documents. Many people as part of their workflow start new projects or revive old ones.
+
+- https://blogs.uoregon.edu/rclub/2016/04/19/setting-up-a-lovely-new-project/
+
+## Using Packrat with RStudio
+
+- https://rstudio.github.io/packrat/rstudio.html
+
+You will need RStudio 0.98.945 or newer.
+
+- File - New Project - New Directory - Empty Project - Use packrat with this project - Create Project
+
+You are no longer in an ordinary R project; you’re in a Packrat project with its own private package library and in “isolation”.
+
+To get the RStudio integrations, it is necessary to treat your project folder as an R Project.
+
+When you create the project, RStudio runs the packrat::init() function to enter packrat mode, takes a snapshot of the package dependencies and places the binaries in the project folder under yourproject/packrat/src/.
+
+init() runs restore() to apply the latest snapshot to the project folder. R will restart once this process is finished.
+
+- http://t-redactyl.io/blog/2016/10/a-crash-course-in-reproducible-research-in-r.html
+
+## RStudio Packrat Notes
+
+Auto-Snapshotting - RStudio works behind the scenes to fetch the package’s sources and save them in Packrat. Packrat keeps track of any changes you make to your project dependencies without you needing to explicitly snapshot them yourself.
+
+If you’re bringing an existing Packrat project into RStudio, you don’t need to do anything special to make it work. And if you’re just starting a new project, you can start with Packrat right away.
+
+If you have an existing RStudio project you’d like to bring under Packrat control, you can add it using the new Packrat section under Tools | Project Options.
+
+Packages pane will show you the status of your project’s private Packrat library.
+
+RStudio tries to infer whether the appropriate action is a snapshot (i.e. update Packrat to match the library) or restore (i.e. update the library to match Packrat).
+
+You can pick your library state or the Packrat state, but not some of each.
+
+Remember, package removes aren’t auto-snapshotted, so save your changes to Packrat once you’ve verified that your project’s state is consistent after cleanup.
+
+## Demo - RStudio Mode
+
+Let’s try packrat::install_github("rstudio/rmarkdown"). Once the command finishes you’ll see the Packages pane show the new packages.
+
+## Packrat Bundle Sharing
+
+My bundle is packrat_test-2017-04-24.tar.gz.
+
+"Packrat, in essence, creates a large zip file with all of the libraries and settings used for a project. Users then send this entire file to their collaborators and collaborators load packages and libraries from that zip file. This ensures that the versions of packages used are the same across all collaborators."
+
+- https://cereo.wsu.edu/2017/02/23/packrat-package-managing-package-versions/
+
+You can share your projects with "bundle". Bundles help remove worry about conflicting package versions from person to person or computer to computer.
+
+Example of a packrat bundle to reproduce :
+- https://ropensci.org/blog/2014/11/10/open-data-growth.html
+
+- You can push your RStudio project directory (packrat bundle) to a remote repo like Github. See here :
+
+When you initialize a packrat project on github, it will let everyone clone it and call packrat::restore() to reproduce. The person starting with the bundle will also need to make sure their machine is able to build packages from source. For Windows, this means making sure you have Rtools:
+
+- https://cran.rstudio.com/bin/windows/Rtools/
+
+See here for other operating systems:
+
+- https://support.rstudio.com/hc/en-us/articles/200486498-Package-Development-Prerequisites
+
+## Collaboration
+
+Packrat creates a large zip file with all of the libraries and settings used for a project. Users then send this entire file to their collaborators and collaborators load packages and libraries from that zip file. This ensures that the versions of packages used are the same across all collaborators.
+
+You can send a "snapshot" or bundle (scripts plus private library). Collaborators use packrat::unbundle("C:/phil/Misc/R_test/packrat_demo/packrat/bundles/packrat_demo-2017-02-21.tar.gz", #location of the bundled project "C:/john/Misc/R_test/packrat_demo2") #where we will unbundle the project.
+
+Note: unbundling can take a few minutes!
+
+There are two ways a bundled project can be “unbundled” :
+
+- 1. If Packrat is installed on the target machine, the unbundle function can be used.
+
+- 2. Otherwise, the bundled project can simply be untarred and un-gzipped using most file archiving projects
+
+## Packrat & Version Control
+
+- If you’re collaborating using a version control system, Packrat will help keep your private libraries in sync. RStudio watches for changes to your Packrat lockfile. When a change from a version control system updates your Packrat lockfile, RStudio will prompt you to apply that change to your private library.
+
+## Packrat Notes
+
+- 1. http://lukesingham.com/using-package-management-in-r/
+
+When updating a package, without git, running packrat::restore() to downgrade a package requires the overwrite.dirty=TRUE option and seems to require switching off auto.snapshot. For a better understanding and control over packrat, turn off auto.snapshot.
+
+- 2. https://bookdown.org/Tazinho/Tidyverse-Cookbook/rstudio-project-management.html
+
+When you unbundle a project, which was created under an older (or newer) R version, then installed, packrat will warn you and install the older (or newer) R version when calling packrat::snapshot(). This is one among other reasons, why it is easier to work with packrat, while having access to the internet.
+
+- 3. https://rpubs.com/cosmicBboy/nyc-r-stats-pegged1
+
+Unable to find source packages when restoring
+
+> packrat::restore()
+Installing knitr (1.11) ...
+FAILED
+Error in getSourceForPkgRecord(pkgRecord, srcDir(project), availablePkgs,  :
+  Couldn't find source for version 1.11 of knitr (1.10.5 is current)
+Happens when there is a new version of a package on a R package repository like CRAN.
+
+Solution 1: Use R's Installation Procedure
+
+> install.packages(<package_name>)
+> packrat::snapshot()
+Solution 2: Manually Download Source File
+
+$ wget -P repo/packrat/src <package_source_url> 
+> packrat::restore()
+Python calls R
+
+- 4. http://bconnelly.net/2014/07/creating-reproducible-software-environments-with-packrat/
+
+Note that because Packrat stores all of the packages used as well as their source code, projects using Packrat will require more disk space.
+
+- 5. http://distancesampling.org/developer/develop/dev-packrat.html
+
+Snapshot downloads the sources of the dependencies and installs them. This means you have to have C and Fortran compilers installed for this to work.
+
+- 6. https://groups.google.com/forum/#!topic/packrat-discuss/RYgrosywULU
+
+Manually make sure that Rtools and the PATH are configured properly to match the packrat snapshot when transferring a package project to another machine.
+
+- 7. http://bconnelly.net/2014/07/creating-reproducible-software-environments-with-packrat/
+
+Snapshot() will make sure that each of the packages on which the project depends are available, which includes building them if necessary.
+
+- 8. http://stackoverflow.com/questions/27282935/rstudio-packrat-and-knitr
+
+If you activated Packrat for your project, and for some reason packrat::disable() did not clean out the .Rprofile generated, you may need to remove it manually.
+
+- 9. https://github.com/rstudio/packrat/issues/31#issuecomment-208313921 & http://stackoverflow.com/questions/36431714/loading-dependencies-from-package-internal-packrat-library
+
+Why doesn't packrat support running in packages?There has been substantial progress on using packrat within the context of R package development, but there may yet be some edge cases to resolve (especially in the context of using packrat + R package + RStudio all together). Feel free to give it a whirl and raise an issue if you have trouble!
+
+## Other Package Tools Used for Managing Packages & Package Dependencies
+
+- 1. https://cran.r-project.org/web/packages/miniCRAN/index.html
+
+- 2. checkpoint Package: See https://mran.microsoft.com/rro/#repos
+ - https://cran.r-project.org/web/packages/checkpoint/index.html
+
+- 3. https://github.com/richfitz/remake
+
+- 4. Switchr - handy abstraction over .libPaths(), lib.loc and other lower level library settings. Helpful in creating and managing libraries.
+
+## Other Tools
+
+- 1.  Docker containers for projects
+ - https://hub.docker.com/r/rocker/
+ - http://www.vanessasaur.us/rawr/2017/explore-drug-database/
+ 
+Docker allows you to write a recipe for what is important in your project and then you can distribute the resulting images. Docker works well on your local machine, on a cluster or on Amazon etc.
+
+- 2. make
+
+Make is a language-agnostic build management utility for *nix.
+
+ - http://opr.princeton.edu/workshops/Downloads/2017Jan_ReproducibleReasearchToolsPratt.pdf
+
+ - https://www.rstudio.com/resources/videos/user-lightning-talks/
+ - Watch first presentation
+
+ - http://will-landau.com/2016/06/14/workflow/
+
+## Interesting
+
+- 1. How to Set Up a Custom CRAN-like Repository
+http://rstudio.github.io/packrat/custom-repos.html
+
+- 2. https://support.rstudio.com/hc/en-us/articles/216528108-Deploying-packrat-projects-to-Shiny-Server-Pro?mobile_site=true
+
+- 3. https://groups.google.com/forum/#!forum/packrat-discuss
+
+- 4. https://discuss.ropensci.org/t/reproducibility-in-r-package-building-with-travis-and-packrat/445
+
+- 5. https://www.jasperginn.nl/shiny-server-series-pt1/
+
+- 6. https://rviews.rstudio.com/2017/04/19/r-for-enterprise-understanding-r-s-startup/
+
+- 7. http://www.baselr.org/presentations/2017/03/BaselR_-_Reproducible_analysis_-_Joris_Muller_-_20170307.pdf
