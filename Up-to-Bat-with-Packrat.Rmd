@@ -158,7 +158,7 @@ Currently, reproducibility is hard work and it might help to acknowledge that ex
 
 After a review of the options (packrat, docker, git, etc.) it seems there is no one option as of yet that satisfies many of the needs of reproducibility and many offer 2 of 3 benefits/features below:
 
-1. Cost/Resource Effectiveness
+1. Open Source & Part of Data Science Ecosystem
 2. Supports Reproducibility
 3. Functional / User Friendly / Ease of Use
 
