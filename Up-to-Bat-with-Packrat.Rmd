@@ -9,7 +9,7 @@ output:
     theme: cosmo
 ---
 
-## Introduction
+## Introduction to Packrat
 
 R is a powerful programming language for statistical computing with many packages and tools.
 
@@ -265,6 +265,8 @@ https://support.rstudio.com/hc/en-us/articles/206827897-Secure-Package-Downloads
 
 Common/system libraries & user information is here:
 
+Managing user vs system libraries:
+
 - https://support.rstudio.com/hc/en-us/articles/215733837-Managing-libraries-for-RStudio-Server
 
 - https://cran.r-project.org/doc/manuals/r-release/R-admin.html#Managing-libraries
@@ -276,6 +278,14 @@ https://support.rstudio.com/hc/en-us/articles/200486138-Using-Different-Versions
 General package information is here:
 
 https://support.rstudio.com/hc/en-us/articles/200486508-Building-Testing-and-Distributing-Packages
+
+Updating libraries with versions of R:
+
+- http://rpubs.com/wch/275466
+
+You may also take a look at: 
+
+- https://github.com/r-lib/crancache
 
 ## Packrat - What it is?
 
@@ -292,6 +302,8 @@ readLines(system.file("DESCRIPTION", package = "packrat"))[c(3,9,10)]
 The last ‘snapshotted’ state can be used to save and restore the state of the private library
 
 Packrat captures all source code required to reproduce configurations and requires no changes to CRAN.
+
+- https://www.rstudio.com/resources/webinars/managing-package-dependencies-in-r-with-packrat/
 
 ## Packrat - Installing
 
@@ -499,6 +511,8 @@ Many people/organizations will also mirror the cran repo as explained here:
 
 - https://cran.rstudio.com/mirror-howto.html
 
+- https://cran.r-project.org/doc/manuals/R-admin.html#Setting-up-a-package-repository
+
 It is an easy way to grab all the packages and files from CRAN at once and then you set your repo to point to that new location as described here:
 
 - http://docs.rstudio.com/ide/server-pro/r-sessions.html#cran-repositories
@@ -514,6 +528,37 @@ Other organizations do the above via Packrat.
 Setting Up a local repository info here:
 
 - https://support.rstudio.com/hc/en-us/articles/115006298728-Package-Management-for-Offline-RStudio-Connect-Installations
+
+## Server Tips
+
+- https://support.rstudio.com/hc/en-us/articles/200552316-Configuring-the-Server
+
+External Libraries
+
+You can add elements to the default LD_LIBRARY_PATH for R sessions (as determined by the R ldpaths script) by adding an rsession-ld-library-path entry to the server config file. This might be useful for ensuring that packages can locate external library dependencies that aren't installed in the system standard library paths. For example:
+
+rsession-ld-library-path=/opt/local/lib:/opt/local/someapp/lib
+
+Specifying R Version
+
+By default RStudio Server runs against the version of R which is found on the system PATH (using which R). You can override which version of R is used via the rsession-which-r setting in the server config file. For example, if you have two versions of R installed on the server and want to make sure the one at /usr/local/bin/R is used by RStudio then you would use:
+
+rsession-which-r=/usr/local/bin/R
+Note again that the server must be restarted for this setting to take effect.
+
+Package Library Path
+
+By default RStudio sets the R_LIBS_USER environment variable to ~/R/library. This ensures that packages installed by end users do not have R version numbers encoded in the path (which is the default behavior). This in turn enables administrators to upgrade the version of R on the server without reseting users installed packages (which would occur if the installed packages were in an R-version derived directory).
+
+If you wish to override this behavior you can do so using the r-libs-user settings. For example:
+
+r-libs-user=~/R/packages
+CRAN Repository
+
+Finally, you can set the default CRAN repository for the server using the r-cran-repos setting. For example:
+
+r-cran-repos=https://mirrors.nics.utk.edu/cran/
+Note again that the above settings should be specified in the /etc/rstudio/rsession.conf file (rather than the aforementioned rserver.conf file).
 
 ## Packrat Bundle Sharing
 
@@ -540,6 +585,10 @@ See here for other operating systems:
 
 - https://support.rstudio.com/hc/en-us/articles/200486498-Package-Development-Prerequisites
 
+Via RStudio Connect
+
+- https://support.rstudio.com/hc/en-us/articles/115003639788-Bundle-Downloads
+
 ## Collaboration
 
 Packrat creates a large zip file with all of the libraries and settings used for a project. Users then send this entire file to their collaborators and collaborators load packages and libraries from that zip file. This ensures that the versions of packages used are the same across all collaborators.
@@ -557,6 +606,47 @@ There are two ways a bundled project can be “unbundled” :
 ## Packrat & Version Control
 
 - If you’re collaborating using a version control system, Packrat will help keep your private libraries in sync. RStudio watches for changes to your Packrat lockfile. When a change from a version control system updates your Packrat lockfile, RStudio will prompt you to apply that change to your private library.
+
+## Using a packrat with Shiny Apps:
+
+On the client, instead of running packrat::init() in the application directory, use:
+
+packrat::.snapshotImpl(snapshot.sources = FALSE, ".")
+packrat::set_opts(use.cache = TRUE)
+
+Commit the results to Git
+
+In your sandbox and production server, setup a directory as a global cache and ensure
+
+R_PACKRAT_CACHE_DIR is set, see:
+
+?packrat::set_opts
+
+Setup a post-merge hook in your production / sandbox environment that runs:
+
+packrat::init()
+
+This will turn packrat on and create a unique library using the package described in the packrat/packrat.lock file committed in the Git repo. Packages will be added to the library from the global cache (if available) or else from CRAN.
+
+Other:
+
+- https://rstudio.github.io/shinytest/articles/ci.html
+
+## Using a packrat with RStudio Connect:
+
+RStudio Connect manages the deployment process through push-button publishing, but also includes support for bundle versioning and potentially staging - production promotions, see:
+
+- https://support.rstudio.com/hc/en-us/articles/115003639788-Bundle-Downloads
+
+- https://support.rstudio.com/hc/en-us/articles/226871467-Package-management-in-RStudio-Connect
+
+- https://support.rstudio.com/hc/en-us/articles/115006298728-Package-Management-for-Offline-RStudio-Connect-Installations
+
+- http://docs.rstudio.com/connect/admin/package-management.html
+
+- https://support.rstudio.com/hc/en-us/articles/226871847-Process-management-in-RStudio-Connect
+
+- https://github.com/rstudio/packrat/issues/291
 
 ## Packrat Notes
 
