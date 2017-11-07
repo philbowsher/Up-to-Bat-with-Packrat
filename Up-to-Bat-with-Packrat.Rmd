@@ -724,6 +724,19 @@ Why doesn't packrat support running in packages?There has been substantial progr
  
 Docker allows you to write a recipe for what is important in your project and then you can distribute the resulting images. Docker works well on your local machine, on a cluster or on Amazon etc.
 
+"With a syntax that is simpler than other provisioning tools
+(e.g. Chef, Puppet, Ansible) or Continuous Integration (CI)
+platforms (e.g. Travis CI, Shippable CI); users need little
+more than a basic familiarity with shell scripts and a
+Linux distribution software environment (e.g. Debian-based
+apt-get) to get started writing Dockerfiles."
+
+ - https://arxiv.org/pdf/1410.0846.pdf
+
+- https://mattwilcox.net/web-development/vagrant-puppet-docker/
+
+- https://superuser.com/questions/743448/is-there-any-reason-to-use-puppet-alongside-with-docker
+
 - 2. make
 
 Make is a language-agnostic build management utility for *nix.
