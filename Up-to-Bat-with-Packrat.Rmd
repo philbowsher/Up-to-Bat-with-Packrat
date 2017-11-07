@@ -720,7 +720,7 @@ Why doesn't packrat support running in packages?There has been substantial progr
 
 - 1.  Docker containers for projects
  - https://hub.docker.com/r/rocker/
- - http://www.vanessasaur.us/rawr/2017/explore-drug-database/
+ - https://vsoch.github.io/rawr/2017/explore-drug-database/
  
 Docker allows you to write a recipe for what is important in your project and then you can distribute the resulting images. Docker works well on your local machine, on a cluster or on Amazon etc.
 
