@@ -283,6 +283,18 @@ Updating libraries with versions of R:
 
 - http://rpubs.com/wch/275466
 
+Upgrading R:
+
+The advice is usually not to, and to install the new version side-by-side with the old version.
+
+https://support.rstudio.com/hc/en-us/articles/215488098-Installing-multiple-versions-of-R 
+
+http://docs.rstudio.com/ide/server-pro/r-versions.html#installing-multiple-versions-of-r
+
+http://docs.rstudio.com/ide/server-pro/r-versions.html#managing-upgrades-of-r
+
+https://support.rstudio.com/hc/en-us/articles/218004217-Building-R-from-source 
+
 You may also take a look at: 
 
 - https://github.com/r-lib/crancache
